@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from urllib.request import urlopen, Request
+from urllib.request import urlopen
 
 import csv
 import io
@@ -11,9 +11,9 @@ import sys
 
 # Media roots radio
 USER_ID = 1808429
+CLIENT_ID = 'JlZIsxg2hY5WnBgtn3jfS0UYCl0K8DOg'
 
 def main(argv=None):
-    headers = {}
 
     # get all tracks
     if os.path.exists("all_tracks.json"):
@@ -21,11 +21,11 @@ def main(argv=None):
             all_tracks = json.load(f)
     else:
         all_tracks = []
-        href = 'https://api-v2.soundcloud.com/users/%d/tracks?representation=&client_id=JlZIsxg2hY5WnBgtn3jfS0UYCl0K8DOg&limit=20&offset=0&linked_partitioning=1&app_version=1502368172' % (USER_ID,)
+        href = 'https://api-v2.soundcloud.com/users/%d/tracks?representation=&limit=20&offset=0&linked_partitioning=1&app_version=1502368172' % (USER_ID,)
         while href is not None:
+            href += '&client_id=%s' % (CLIENT_ID,)
             print("going to", href)
-            req = Request(href, headers=headers)
-            with urlopen(req) as resp:
+            with urlopen(href) as resp:
                 data = json.load(io.TextIOWrapper(resp))
             all_tracks.extend(data['collection'])
             href = data.get('next_href')
@@ -41,11 +41,11 @@ def main(argv=None):
         # now get all comments
         all_comments = []
         for track in all_tracks:
-            href = 'https://api.soundcloud.com/app/v2/tracks/%d/comments?client_id=JlZIsxg2hY5WnBgtn3jfS0UYCl0K8DOg&limit=20&offset=0&linked_partitioning=1&app_version=1502368172' % (track['id'],)
+            href = 'https://api.soundcloud.com/app/v2/tracks/%d/comments?limit=20&offset=0&linked_partitioning=1&app_version=1502368172' % (track['id'],)
+            href += '&client_id=%s' % (CLIENT_ID,)
             while href is not None:
                 print("going to", href)
-                req = Request(href, headers=headers)
-                with urlopen(req) as resp:
+                with urlopen(href) as resp:
                     data = json.load(io.TextIOWrapper(resp))
                 all_comments.extend(data['collection'])
                 href = data.get("next_href")
